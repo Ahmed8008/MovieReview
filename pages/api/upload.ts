@@ -4,7 +4,7 @@ import fs from 'fs';
 import path from 'path';
 
 // Create a directory to store uploaded files
-const uploadDir = '${process.env.NEXT_PUBLIC_BASE_URL}/public/uploads';
+const uploadDir = process.env.NEXT_PUBLIC_BASE_URL+'/public/uploads';
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
