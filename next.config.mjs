@@ -1,7 +1,7 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
   env: {
-    NEXTAUTH_SECRET: SecretKeys,
+    NEXTAUTH_SECRET: process.env.NEXTAUTH_SECRET,
   },
 };
 
