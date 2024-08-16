@@ -38,7 +38,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
           to: email,
           from: process.env.EMAIL_USER,
           subject: 'Password Reset',
-          text: `Click the following link to reset your password: movie-review-green-eight.vercel.app/reset-password?token=${token}`,
+          text: `Click the following link to reset your password: ${process.cwd()}/reset-password?token=${token}`,
         });
         res.status(200).json({ message: 'Password reset link sent' });
       } catch (emailError) {
