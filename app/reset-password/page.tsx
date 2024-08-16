@@ -1,12 +1,18 @@
+"use client";
 import { useState, FormEvent } from 'react';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 
-export default function ResetPassword({ token }: { token: string | null }) {
+export default function ResetPassword() {
   const [password, setPassword] = useState("");
   const [message, setMessage] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
   const [menuOpen, setMenuOpen] = useState<boolean>(false); // State for mobile menu
   const router = useRouter();
+  const params = useSearchParams();
+  
+  // Ensure params is not null
+  const token = params ? params.get('token') : null;
 
   const handleSubmit = async (event: FormEvent) => {
     event.preventDefault();
@@ -43,7 +49,7 @@ export default function ResetPassword({ token }: { token: string | null }) {
 
   return (
     <>
-      <header className="fixed top-0 left-0 right-0 bg-[#0F0F0F] z-50 p-4">
+     <header className="fixed top-0 left-0 right-0 bg-[#0F0F0F] z-50 p-4">
         <div className="flex flex-col sm:flex-row justify-between items-center">
           {/* Logo */}
           <div className="flex items-center sm:flex-row mr-7 ml-12">
@@ -58,15 +64,16 @@ export default function ResetPassword({ token }: { token: string | null }) {
           {/* Navigation Links */}
           <nav className={`flex sm:flex-row text-center flex-col ${menuOpen ? 'block' : 'hidden'} sm:space-x-4 py-2`} id="navMenu">
             <a href="/" className="text-white hover:text-yellow-400">Home</a>
-            <a href="/BrowseMovies" className="text-white hover:text-yellow-400">Browse Movies</a>
+            <a href="/BrowseMovies" className= "text-white hover:text-yellow-400">Browse Movies</a>
             <a href="/PopularMovies" className="text-white hover:text-yellow-400">Browse Popular Movies</a>
             <a href="/TopReiewedMovies" className="text-white hover:text-yellow-400">Browse Top Reviewed Movies</a>
           </nav>
 
           {/* Auth Buttons */}
           <div className="mt-4 sm:mt-0 sm:space-x-4 flex flex-col sm:flex-row w-1/2 ml-10 sm:w-auto mr-12">
-            <button onClick={() => router.push('/LoginIn')} className="bg-pink-500 px-4 py-2 rounded-full text-white mb-2 sm:mb-0">Log In</button>
-            <button onClick={() => router.push('/Registration')} className="bg-pink-500 px-4 py-2 rounded-full text-white">Sign Up</button>
+          <button onClick={() => router.push('/LoginIn')} className="bg-pink-500 px-4 py-2 rounded-full text-white mb-2 sm:mb-0">Log In</button>
+              <button onClick={() => router.push('/Registration')} className="bg-pink-500 px-4 py-2 rounded-full text-white">Sign Up</button>
+   
           </div>
         </div>
       </header>
@@ -101,11 +108,4 @@ export default function ResetPassword({ token }: { token: string | null }) {
       </div>
     </>
   );
-}
-
-export async function getServerSideProps(context: any) {
-  const token = context.query.token || null;
-  return {
-    props: { token },
-  };
 }
