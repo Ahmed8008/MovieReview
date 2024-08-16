@@ -28,15 +28,15 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
       const transporter = nodemailer.createTransport({
         service: 'Gmail',
         auth: {
-          user: process.env.EMAIL_USER,
-          pass: process.env.EMAIL_PASS,
+          user: demo7899999@gmail.com,
+          pass: bfapmnypsntylcde
         },
       });
 
       try {
         await transporter.sendMail({
           to: email,
-          from: process.env.EMAIL_USER,
+          from: demo7899999@gmail.com,
           subject: 'Password Reset',
           text: `Click the following link to reset your password: ${process.cwd()}/reset-password?token=${token}`,
         });
