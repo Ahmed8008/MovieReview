@@ -1,15 +1,10 @@
 "use client";
 import React, { useEffect, useState } from 'react';
-import { Swiper, SwiperSlide } from 'swiper/react';
-import 'swiper/css';
-import 'swiper/css/navigation';
-import 'swiper/css/pagination';
-import { Navigation, Pagination } from 'swiper/modules';
-import { FaStar, FaSignOutAlt } from 'react-icons/fa';
-import Modal from '@/Components/Modal';
+import { FaStar,FaSignOutAlt  } from 'react-icons/fa';
 import { useRouter } from 'next/navigation';
-import { useSession, signOut } from 'next-auth/react';
+import Modal from '@/Components/Modal';
 
+import { useSession, signOut } from 'next-auth/react';
 interface Movie {
   movie_id: number;
   moviename: string;
@@ -24,15 +19,12 @@ interface Movie {
 const Page = () => {
   const { data: session } = useSession(); // Retrieve session data
   const [movies, setMovies] = useState<Movie[]>([]);
-  const [inTheaterMovies, setInTheaterMovies] = useState<Movie[]>([]);
-  const [onTVMovies, setOnTVMovies] = useState<Movie[]>([]);
   const [error, setError] = useState<string | null>(null);
-  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [menuOpen, setMenuOpen] = useState<boolean>(false);
-  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false); // State for dropdown visibility
+  const [selectedMovie, setSelectedMovie] = useState<Movie | null>(null);
   const [averageRatings, setAverageRatings] = useState<{ [key: number]: string }>({});
   const router = useRouter();
-
+  const [dropdownOpen, setDropdownOpen] = useState<boolean>(false); // State for dropdown visibility
   useEffect(() => {
     const fetchMovies = async () => {
       try {
@@ -43,13 +35,9 @@ const Page = () => {
         const data = await response.json();
         setMovies(data);
 
-        // Filter movies by category
-        setInTheaterMovies(data.filter((movie: Movie) => movie.category === 'In Theater'));
-        setOnTVMovies(data.filter((movie: Movie) => movie.category === 'On TV'));
-
         // Fetch average ratings for each movie
         const ratings = await Promise.all(
-          data.map(async (movie: any) => {
+          data.map(async (movie: Movie) => {
             const ratingResponse = await fetch(`/api/getRating?movie_id=${movie.movie_id}`);
             const ratingData = await ratingResponse.json();
             return { movie_id: movie.movie_id, averageRating: ratingData.averageRating };
@@ -99,7 +87,6 @@ const Page = () => {
   const toggleDropdown = () => {
     setDropdownOpen(!dropdownOpen);
   };
-
   return (
     <div className="bg-[#0A0A0A] text-white font-sans min-h-screen">
       {/* Header */}
@@ -166,122 +153,36 @@ const Page = () => {
         </div>
       </header>
 
+
       {/* Add padding to ensure content is visible below the fixed header */}
       <div className={`pt-48 sm:pt-40 ${menuOpen ? 'pt-96' : ''} md:pt-32 lg:pt-20`}>
         <br />
 
-        {/* Slider for Top Movies */}
-        <div className="p-8 max-w-7xl mx-auto">
-          <Swiper
-            modules={[Navigation, Pagination]}
-            spaceBetween={10}
-            navigation
-            loop={true}
-            breakpoints={{
-              640: { slidesPerView: 1, spaceBetween: 10 },
-              768: { slidesPerView: 2, spaceBetween: 20 },
-              1024: { slidesPerView: 3, spaceBetween: 30 },
-              1280: { slidesPerView: 4, spaceBetween: 30 }
-            }}
-          >
-            {movies.slice(0, 5).map((movie) => (
-              <SwiperSlide key={movie.movie_id} onClick={() => handleSlideClick(movie)}>
-                <div className="flex flex-col items-center">
-                  <img 
-                    src={movie.imagepath} 
-                    alt={movie.moviename} 
-                    className="w-full max-w-[200px] sm:max-w-[300px] lg:max-w-[400px] h-[300px] sm:h-[400px] lg:h-[500px] object-cover rounded-lg cursor-pointer" 
-                  />
-                  <div className="text-center mt-2">
-                    <div className="text-lg font-bold">{movie.moviename}</div>
-                    <div className="text-sm text-gray-400 flex items-center justify-center gap-1">
-                      <FaStar color="#FFD700" />
-                      <span>{averageRatings[movie.movie_id] || 'N/A'}</span> {/* Display average rating or 'N/A' */}
-                    </div>
-                  </div>
+        {/* Movie Grid */}
+        <div className="container mx-auto px-4">
+          <h2 className="text-xl font-bold mb-6 ml-4">All Movies</h2>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6">
+            {movies.map((movie) => (
+              <div key={movie.movie_id} className="rounded-lg p-4 mb-8" onClick={() => handleSlideClick(movie)}>
+                <img
+                  src={movie.imagepath}
+                  alt={movie.moviename}
+                  className="w-full h-80 object-cover rounded-lg mb-4"
+                />
+                <h3 className="text-xs font-bold text-center mb-2">{movie.moviename}</h3>
+                <div className="flex items-center justify-center">
+                  <FaStar className="text-yellow-400 mr-1" />
+                  <span>{averageRatings[movie.movie_id] || 'N/A'}</span>
                 </div>
-              </SwiperSlide>
+              </div>
             ))}
-          </Swiper>
-        </div>
-
-        {/* Sections */}
-        <div className="p-8 max-w-7xl mx-auto">
-          <div className="mt-12">
-            <h2 className="text-xl font-bold mb-4">In Theater</h2>
-            <Swiper
-              modules={[Navigation, Pagination]}
-              spaceBetween={10}
-              navigation
-              loop={true}
-              breakpoints={{
-                640: { slidesPerView: 1, spaceBetween: 10 },
-                768: { slidesPerView: 2, spaceBetween: 20 },
-                1024: { slidesPerView: 3, spaceBetween: 30 },
-                1280: { slidesPerView: 4, spaceBetween: 30 }
-              }}
-            >
-              {movies.slice().reverse().slice(0, 5).map((movie) => (
-                <SwiperSlide key={movie.movie_id} onClick={() => handleSlideClick(movie)}>
-                  <div className="flex flex-col items-center">
-                    <img 
-                      src={movie.imagepath} 
-                      alt={movie.moviename} 
-                      className="w-full max-w-[200px] sm:max-w-[300px] lg:max-w-[400px] h-[300px] sm:h-[400px] lg:h-[500px] object-cover rounded-lg cursor-pointer" 
-                    />
-                    <div className="text-center mt-2">
-                      <div className="text-lg font-bold">{movie.moviename}</div>
-                      <div className="text-sm text-gray-400 flex items-center justify-center gap-1">
-                        <FaStar color="#FFD700" />
-                        <span>{averageRatings[movie.movie_id] || 'N/A'}</span> {/* Display average rating or 'N/A' */}
-                      </div>
-                    </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-          </div>
-
-          <div className="mt-12">
-            <h2 className="text-xl font-bold mb-4">On TV</h2>
-            <Swiper
-              modules={[Navigation, Pagination]}
-              spaceBetween={10}
-              navigation
-              loop={true}
-              breakpoints={{
-                640: { slidesPerView: 1, spaceBetween: 10 },
-                768: { slidesPerView: 2, spaceBetween: 20 },
-                1024: { slidesPerView: 3, spaceBetween: 30 },
-                1280: { slidesPerView: 4, spaceBetween: 30 }
-              }}
-            >
-              {movies.slice(0, 5).map((movie) => (
-                <SwiperSlide key={movie.movie_id} onClick={() => handleSlideClick(movie)}>
-                  <div className="flex flex-col items-center">
-                    <img 
-                      src={movie.imagepath} 
-                      alt={movie.moviename} 
-                      className="w-full max-w-[200px] sm:max-w-[300px] lg:max-w-[400px] h-[300px] sm:h-[400px] lg:h-[500px] object-cover rounded-lg cursor-pointer" 
-                    />
-                    <div className="text-center mt-2">
-                      <div className="text-lg font-bold">{movie.moviename}</div>
-                      <div className="text-sm text-gray-400 flex items-center justify-center gap-1">
-                        <FaStar color="#FFD700" />
-                        <span>{averageRatings[movie.movie_id] || 'N/A'}</span> {/* Display average rating or 'N/A' */}
-                      </div>
-                    </div>
-                  </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
           </div>
         </div>
 
         {/* Modal for Movie Details */}
         {selectedMovie && (
           <Modal
-            movie={selectedMovie} 
+            movie={selectedMovie}
             userId={session?.user?.id || 0}
             userRole={session?.user?.role || ''}
             username={session?.user?.username || ''}
@@ -289,7 +190,6 @@ const Page = () => {
             onClose={closeModal}
           />
         )}
-
       </div>
     </div>
   );
