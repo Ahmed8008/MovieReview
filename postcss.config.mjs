@@ -4,8 +4,6 @@ const config = {
     tailwindcss: {},
   },
 };
-module.exports = {
-  pageExtensions: ['mdx', 'md', 'jsx', 'js', 'tsx', 'ts'],
-}
+
 
 export default config;
