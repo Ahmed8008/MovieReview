@@ -29,7 +29,7 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
         service: 'Gmail',
         auth: {
           user: demo7899999@gmail.com,
-          pass: bfapmnypsntylcde
+          pass: bfapmnypsntylcde,
         },
       });
 
