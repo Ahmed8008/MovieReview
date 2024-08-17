@@ -2,6 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { getSession, signOut } from "next-auth/react";
 import { useRouter } from "next/navigation";
+import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
+import { storage } from "../../firebaseConfig"; // Ensure this path is correct
+
+export var imageUrl =  'this is url';
 
 export default function Movies() {
   const [movieName, setMovieName] = useState("");
@@ -15,7 +19,7 @@ export default function Movies() {
   const [userId, setUserId] = useState<string | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean>(false);
   const [menuOpen, setMenuOpen] = useState(false);
-  const [loading, setLoading] = useState(false); // New loading state
+  const [loading, setLoading] = useState(false);
   const router = useRouter();
 
   useEffect(() => {
@@ -23,7 +27,7 @@ export default function Movies() {
       const session = await getSession();
       if (session && session.user && typeof session.user.id === "string") {
         setUserId(session.user.id);
-  
+
         // Check if user has an admin role
         const userRole = session.user.role; 
         if (userRole === "admin") {
@@ -38,11 +42,11 @@ export default function Movies() {
         router.push("/LoginIn");
       }
     };
-  
+
     fetchSession();
-  
+
     const interval = setInterval(fetchSession, 10 * 60 * 1000); // Refresh session every 10 minutes
-  
+
     return () => clearInterval(interval); // Clean up interval on component unmount
   }, [router]);
 
@@ -54,7 +58,7 @@ export default function Movies() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (
       !movieName ||
       !movieDescription ||
@@ -68,23 +72,13 @@ export default function Movies() {
       return;
     }
 
-    setLoading(true); // Set loading state to true
+    setLoading(true);
 
-    // Upload image first
     try {
-      const formData = new FormData();
-      formData.append("image", image);
-
-      const uploadResponse = await fetch("/api/upload", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!uploadResponse.ok) {
-        throw new Error("Image upload failed");
-      }
-
-      const { filePath } = await uploadResponse.json();
+      // Upload image to Firebase Storage
+      const storageRef = ref(storage, `images/${image.name}`);
+      await uploadBytes(storageRef, image);
+      const imageUrl = await getDownloadURL(storageRef);
 
       // Proceed with movie data submission
       const response = await fetch("/api/movies", {
@@ -98,7 +92,7 @@ export default function Movies() {
           Genres: genres,
           Category: category,
           MovieType: movieType,
-          ImagePath: filePath,
+          ImageUrl: imageUrl, // Use the Firebase Storage URL
           User_Id: userId,
         }),
       });
@@ -111,32 +105,31 @@ export default function Movies() {
         setCategory("");
         setMovieType("");
         setImage(null);
-        alert("Movie added successfully!"); // Show alert on success
+        alert("Movie added successfully!");
       } else {
         const { message } = await response.json();
         setError(message || "An error occurred.");
       }
     } catch (error) {
+      console.error("Error uploading movie data:", error);
       setError("An error occurred.");
     } finally {
-      setLoading(false); // Reset loading state
+      setLoading(false);
     }
   };
 
   const handleLogout = async () => {
     try {
-      await signOut({ callbackUrl: "/LoginIn" }); // Redirect to login page after logout
+      await signOut({ callbackUrl: "/LoginIn" });
     } catch (error) {
       console.error("Failed to logout:", error);
     }
   };
 
-  // Toggle mobile menu
   const toggleMenu = () => {
     setMenuOpen(!menuOpen);
   };
 
-  // Render nothing if not admin
   if (!isAdmin) {
     return null;
   }
@@ -268,7 +261,7 @@ export default function Movies() {
           <button
             type="submit"
             className="w-full py-3 bg-purple-600 hover:bg-purple-700 rounded focus:outline-none focus:ring-2 focus:ring-purple-500 transition-colors"
-            disabled={loading} // Disable button when loading
+            disabled={loading}
           >
             {loading ? "Adding..." : "Add Movie"}
           </button>
