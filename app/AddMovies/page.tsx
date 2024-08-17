@@ -5,7 +5,6 @@ import { useRouter } from "next/navigation";
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import { storage } from "../../firebaseConfig"; // Ensure this path is correct
 
-export var imageUrl =  'this is url';
 
 export default function Movies() {
   const [movieName, setMovieName] = useState("");
