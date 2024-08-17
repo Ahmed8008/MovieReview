@@ -3,14 +3,8 @@ import formidable, { IncomingForm } from 'formidable';
 import fs from 'fs';
 import path from 'path';
 
-// Ensure environment variable is set
-const baseURL = process.env.NEXT_PUBLIC_BASE_URL;
-if (!baseURL) {
-  throw new Error('NEXT_PUBLIC_BASE_URL environment variable is not set');
-}
-
 // Create a directory to store uploaded files
-const uploadDir = path.join(baseURL, 'public/uploads');
+const uploadDir = 'movie-review-57as.vercel.app/public/uploads';
 if (!fs.existsSync(uploadDir)) {
   fs.mkdirSync(uploadDir, { recursive: true });
 }
@@ -40,7 +34,7 @@ const handler = async (req: NextApiRequest, res: NextApiResponse) => {
 
       if (file && file.filepath) {
         // Compute relative path
-        const relativePath = path.relative(baseURL, file.filepath);
+        const relativePath = path.relative(process.cwd(), file.filepath);
         const publicPath = `/${path.relative('public', relativePath)}`;
 
         res.status(200).json({ filePath: publicPath });
